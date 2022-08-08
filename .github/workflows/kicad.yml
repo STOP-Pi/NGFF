@@ -19,26 +19,66 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  ERC:
+    runs-on: ubuntu-latest
+    container: setsoft/kicad_auto:dev_k6
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run ERC
+      working-directory: ./kicad/BM2230
+      run: |
+        make erc
+
+    - name: Retrieve results
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: ERC_Fail_Results
+        path: Generated
+
+  DRC:
+    runs-on: ubuntu-latest
+    container: setsoft/kicad_auto:dev_k6
+    needs: ERC
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Run DRC
+      working-directory: ./kicad/BM2230
+      run: |
+        make drc
+
+    - name: Retrieve results
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: DRC_Fail_Results
+        path: Generated
+
   Fabrication:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: sto-pi/KiBot@v1
+    - uses: INTI-CMNB/KiBot@v2_dk6
       with:
         # Required - kibot config file
-        config: project/ngff.kibot.yaml
+        config: configs/JLCPCB.kibot.yaml
         # optional - prefix to output defined in config
-        dir: project/Fabrication
+        dir: kicad/Fabrication
         # optional - schematic file
-        schema: 'project/ngff.sch'
+        # schema: 'kicad/BM2230/ngff.sch'
         # optional - PCB design file
-        board: 'project/ngff.kicad_pcb'
+        board: 'kicad/BM2230/m2ngff.kicad_pcb'
+
     - name: Retrieve results
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
         name: TemplateFabrication
         path: |
-          project/Fabrication/
+          kicad/Fabrication/
         if-no-files-found: warn
 

@@ -1,13 +1,9 @@
-﻿# [NGFF](https://github.com/sto-pi/NGFF)
+﻿# [NGFF](https://doc.stops.top/ngff)
 
-[![sites](http://182.61.61.133/link/resources/OSQ.png)](https://www.stops.top)
 
 [![Build Status](https://github.com/sto-pi/NGFF/workflows/kicad/badge.svg)](https://github.com/sto-pi/NGFF/actions/workflows/kicad.yml)
 
-
-### [NGFF简介](https://github.com/sto-pi/NGFF)
-
-[NGFF](https://github.com/sto-pi/NGFF) (Next Generation Form Factor)，与 NGFF 并列的是 2.5"（2.5”硬盘（包括HDD和SSD）厚度一般为9.5mm和7mm），NGFF现在已经改名为M.2，M.2有SATA 和PCIe两种总线标准。
+[NGFF](https://doc.stops.top/ngff) (Next Generation Form Factor)，NGFF现在已经改名为M.2，M.2有SATA 和PCIe两种总线标准。
 
 M.2接口是一种新的主机接口方案，可以兼容多种通信协议，如sata、PCIe、USB、HSIC、UART、SMBus等。
 
