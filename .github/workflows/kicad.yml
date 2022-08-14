@@ -71,7 +71,7 @@ jobs:
         # optional - schematic file
         # schema: 'kicad/BM2230/ngff.sch'
         # optional - PCB design file
-        board: 'kicad/BM2230/m2ngff.kicad_pcb'
+        board: 'kicad/m2ngff.kicad_pcb'
 
     - name: Retrieve results
       if: ${{ always() }}
