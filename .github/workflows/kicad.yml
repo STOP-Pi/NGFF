@@ -58,7 +58,7 @@ jobs:
   #       name: DRC_Fail_Results
   #       path: Generated
 
-  Fabrication:
+  JLCPCB:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -67,7 +67,7 @@ jobs:
         # Required - kibot config file
         config: kicad/configs/JLCPCB.kibot.yaml
         # optional - prefix to output defined in config
-        dir: kicad/Fabrication
+        dir: kicad/JLCPCB
         # optional - schematic file
         # schema: 'kicad/BM2230/ngff.sch'
         # optional - PCB design file
@@ -77,8 +77,8 @@ jobs:
       if: ${{ always() }}
       uses: actions/upload-artifact@v2
       with:
-        name: TemplateFabrication
+        name: TemplateJLC
         path: |
-          kicad/Fabrication/
+          kicad/JLCPCB/
         if-no-files-found: warn
 
