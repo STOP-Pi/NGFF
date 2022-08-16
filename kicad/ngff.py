@@ -3,43 +3,29 @@ import pcbnew
 import FootprintWizardBase
 
 # Dimensions from PCIe M.2 Specification rev 1.0 §2.3.5.2.
-keyingFirst = {
+keying = {
     "A": {
-        "Q": 6.625,
-        "R": 1.50,
-        "S": 14.50,
-        "T": 1.00,
-        "U": 14.50,
+        "KeyCenter": 6.625,  # Distance from the center of the footprint to the center of the key
         "PinMin": 8,
         "PinMax": 15,
     },
     "B": {
-        "Q": 5.625,
-        "R": 2.50,
-        "S": 13.50,
-        "T": 2.00,
-        "U": 13.50,
+        "KeyCenter": 5.625,
         "PinMin": 12,
         "PinMax": 19,
     },
     "E": {
-        "Q": 2.625,
-        "R": 5.50,
-        "S": 10.50,
-        "T": 5.00,
-        "U": 10.50,
+        "KeyCenter": 2.625,
         "PinMin": 24,
         "PinMax": 31,
     },
-}
-
-keyingSecond = {
+    "G": {
+        "KeyCenter": -1.125,
+        "PinMin": 39,
+        "PinMax": 46,
+    },
     "M": {
-        "V": 6.125,
-        "W": 14.00,
-        "X": 2.50,
-        "Y": 1.00,
-        "Z": 14.50,
+        "KeyCenter": -6.125,
         "PinMin": 59,
         "PinMax": 66,
     },
@@ -93,11 +79,11 @@ class NGFF_FootprintWizard(FootprintWizardBase.FootprintWizard):
 
     def firstKey(self):
         first = self.GetParam("Keying", "First").value
-        return keyingFirst.get(first, None)
+        return keying.get(first, None)
 
     def secondKey(self):
         second = self.GetParam("Keying", "Second").value
-        return keyingSecond.get(second, None)
+        return keying.get(second, None)
 
     def omitPin(self, number):
         firstKey = self.firstKey()
@@ -166,13 +152,21 @@ class NGFF_FootprintWizard(FootprintWizardBase.FootprintWizard):
     def CheckParameters(self):
         first = self.GetParam("Keying", "First")
         second = self.GetParam("Keying", "Second")
-        if first.value and first.value not in keyingFirst:
-            msg = "Unknown first keying: %s (supported: %s)" % (first, ", ".join(sorted(keyingFirst.keys())))
+        if first.value and first.value not in keying:
+            msg = "Unknown first keying: %s (supported: %s)" % (first, ", ".join(sorted(keying.keys())))
             first.AddError(msg)
 
-        if second.value and second.value not in keyingSecond:
-            msg = "Unknown second keying: %s (supported: %s)" % (second, ", ".join(sorted(keyingSecond.keys())))
+        if second.value and second.value not in keying:
+            msg = "Unknown second keying: %s (supported: %s)" % (second, ", ".join(sorted(keying.keys())))
             second.AddError(msg)
+
+        # if second key is "earlier" than the first key, swap them
+        # otherwise, there's some funky stuff happening?
+        if first.value and second.value:
+            if ord(first.value) > ord(second.value):
+                f, s = first.value, second.value
+                second.SetValue(f)
+                first.SetValue(s)
 
     def FilledBox(self, x1, y1, x2, y2):
         box = pcbnew.EDGE_MODULE(self.module)
@@ -190,7 +184,7 @@ class NGFF_FootprintWizard(FootprintWizardBase.FootprintWizard):
     def drawSolderMaskOpening(self, x1, x2, height, layer):
         rectCenterX = pcbnew.FromMM(0.0)
         rectCenterY = -height / 2.0
-        
+
         box = self.FilledBox(x1, pcbnew.FromMM(0.0), x2, -height)
         box.SetLayer(layer)
         self.draw.module.Add(box)
@@ -231,76 +225,35 @@ class NGFF_FootprintWizard(FootprintWizardBase.FootprintWizard):
 
         draw.Line(topLeftArcEndX, topLeftArcEndY, bottomLeftX, bottomLeftY)
 
-        if self.secondKey():
-            # Distance from the center of the footprint to the center of the key
-            V = pcbnew.FromMM(self.secondKey()["V"])
+        KeyArcAngle = 1800 # decidegrees
 
-            secondKeyBottomLeftX = centerX - V - keyDiameter / 2.0
-            secondKeyBottomLeftY = centerY
+        # small inline function for notch drawing
+        def draw_key(KeyCenter):
+            leftX = centerX + KeyCenter - keyDiameter / 2.0
+            rightX = leftX + keyDiameter
+            topY = centerY - keyHeight + keyDiameter / 2.0
+            # left line
+            draw.Line(leftX, centerY, leftX, topY)
+            # right line
+            draw.Line(rightX, centerY, rightX, topY)
+            # arc
+            self.Arc(KeyCenter, topY, leftX, topY, KeyArcAngle)
 
-            draw.Line(bottomLeftX, bottomLeftY, secondKeyBottomLeftX, secondKeyBottomLeftY)
+        # keys go from left to right and it's more comfortable to preserve this order
+        # so, leftmost (second) key first
 
-            secondKeyTopLeftX = secondKeyBottomLeftX
-            secondKeyTopLeftY = secondKeyBottomLeftY - keyHeight + keyDiameter / 2.0
+        for key in [self.secondKey(), self.firstKey()]:
+            if key:
+                KeyCenter = pcbnew.FromMM(key["KeyCenter"])
+                draw_key(KeyCenter)
 
-            draw.Line(secondKeyBottomLeftX, secondKeyBottomLeftY, secondKeyTopLeftX, secondKeyTopLeftY)
+                leftX = centerX + KeyCenter - keyDiameter / 2.0
+                rightX = leftX + keyDiameter
 
-            secondKeyCenterX = secondKeyTopLeftX + keyDiameter / 2.0
-            secondKeyCenterY = secondKeyTopLeftY
-            secondKeyArcAngle = 1800 # decidegrees
-
-            self.Arc(secondKeyCenterX, secondKeyCenterY, secondKeyTopLeftX, secondKeyTopLeftY, secondKeyArcAngle)
-
-            secondKeyTopRightX = secondKeyTopLeftX + keyDiameter
-            secondKeyTopRightY = secondKeyTopLeftY
-
-            secondKeyBottomRightX = secondKeyTopRightX
-            secondKeyBottomRightY = centerY
-
-            draw.Line(secondKeyTopRightX, secondKeyTopRightY, secondKeyBottomRightX, secondKeyBottomRightY)
-            draw.Line(secondKeyBottomRightX, secondKeyBottomRightY, centerX, centerY)
-
-            bottomEndpoints += [secondKeyBottomLeftX, secondKeyBottomRightX]
-        else:
-            draw.Line(bottomLeftX, bottomLeftY, centerX, centerY)
-
-        # TODO: Implement the second key.
+                bottomEndpoints += [leftX, rightX]
 
         bottomRightX = connectorTongueWidth / 2.0
         bottomRightY = centerY
-
-        if self.firstKey():
-            # Distance from the center of the footprint to the center of the key
-            Q = pcbnew.FromMM(self.firstKey()["Q"])
-
-            firstKeyBottomLeftX = centerX + Q - keyDiameter / 2.0
-            firstKeyBottomLeftY = centerY
-            
-            draw.Line(centerX, centerY, firstKeyBottomLeftX, firstKeyBottomLeftY)
-
-            firstKeyTopLeftX = firstKeyBottomLeftX
-            firstKeyTopLeftY = firstKeyBottomLeftY - keyHeight + keyDiameter / 2.0
-
-            draw.Line(firstKeyBottomLeftX, firstKeyBottomLeftY, firstKeyTopLeftX, firstKeyTopLeftY)
-
-            firstKeyCenterX = firstKeyTopLeftX + keyDiameter / 2.0
-            firstKeyCenterY = firstKeyTopLeftY
-            firstKeyArcAngle = 1800 # decidegrees
-
-            self.Arc(firstKeyCenterX, firstKeyCenterY, firstKeyTopLeftX, firstKeyTopLeftY, firstKeyArcAngle)
-
-            firstKeyTopRightX = firstKeyTopLeftX + keyDiameter
-            firstKeyTopRightY = firstKeyTopLeftY
-
-            firstKeyBottomRightX = firstKeyTopRightX
-            firstKeyBottomRightY = centerY
-
-            draw.Line(firstKeyTopRightX, firstKeyTopRightY, firstKeyBottomRightX, firstKeyBottomRightY)
-            draw.Line(firstKeyBottomRightX, firstKeyBottomRightY, bottomRightX, bottomRightY)
-
-            bottomEndpoints += [firstKeyBottomLeftX, firstKeyBottomRightX]
-        else:
-            draw.Line(centerX, centerY, bottomRightX, bottomRightY)
 
         topRightArcStartX = bottomRightX
         topRightArcStartY = bottomRightY - connectorHeight + connectorBaseArcRadius
@@ -326,6 +279,7 @@ class NGFF_FootprintWizard(FootprintWizardBase.FootprintWizard):
         for endpoints in zip(bottomEndpoints[0::2], bottomEndpoints[1::2]):
             self.drawSolderMaskOpening(endpoints[0], endpoints[1], topPadHeight, pcbnew.F_Mask)
             self.drawSolderMaskOpening(endpoints[0], endpoints[1], bottomPadHeight, pcbnew.B_Mask)
+            draw.Line(endpoints[0], centerY, endpoints[1], centerY) # drawing the bottom lines
 
         for padNumber in range(1, 76):
             pad = self.createPad(padNumber, str(padNumber))
