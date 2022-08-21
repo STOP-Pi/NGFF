@@ -1,7 +1,7 @@
 (kicad_pcb (version 20211014) (generator pcbnew)
 
   (general
-    (thickness 1.6)
+    (thickness 0.8)
   )
 
   (paper "A4")
@@ -29,8 +29,10 @@
   )
 
   (setup
-    (pad_to_mask_clearance 0.051)
+    (pad_to_mask_clearance 0.05)
     (solder_mask_min_width 0.25)
+    (aux_axis_origin 100 100)
+    (grid_origin 100 100)
     (pcbplotparams
       (layerselection 0x00010fc_ffffffff)
       (disableapertmacros false)
@@ -70,7 +72,7 @@
 
   (footprint "ngff:NGFF_A" (layer "F.Cu")
     (tedit 0) (tstamp 9ec0940c-7013-47f0-a45c-65a5141f9b52)
-    (at 115 90)
+    (at 100 100)
     (attr through_hole)
     (fp_text reference "REF**" (at 4 1.5) (layer "F.SilkS")
       (effects (font (size 1 1) (thickness 0.15)))
@@ -193,7 +195,7 @@
 
   (footprint "ngff:NGFF_2250" (layer "F.Cu")
     (tedit 5CE667BC) (tstamp ecc89073-2e5a-4e34-917e-8452434f2c1d)
-    (at 115 90)
+    (at 100 100)
     (attr through_hole)
     (fp_text reference "NGFF2250" (at -0.05 -25.92) (layer "F.Fab")
       (effects (font (size 0.5 0.5) (thickness 0.125)))

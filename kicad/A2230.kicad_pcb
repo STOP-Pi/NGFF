@@ -1,7 +1,7 @@
 (kicad_pcb (version 20211014) (generator pcbnew)
 
   (general
-    (thickness 1.6)
+    (thickness 0.8)
   )
 
   (paper "A4")
@@ -31,6 +31,8 @@
   (setup
     (pad_to_mask_clearance 0.051)
     (solder_mask_min_width 0.25)
+    (aux_axis_origin 100 100)
+    (grid_origin 100 100)
     (pcbplotparams
       (layerselection 0x00010fc_ffffffff)
       (disableapertmacros false)
