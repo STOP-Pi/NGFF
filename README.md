@@ -1,7 +1,5 @@
 ﻿# [NGFF](https://doc.stops.top/ngff)
 
-[![Build Status](https://github.com/sto-pi/NGFF/workflows/kicad/badge.svg)](https://github.com/sto-pi/NGFF/actions/workflows/kicad.yml)
-
 [NGFF](https://doc.stops.top/ngff) (Next Generation Form Factor)，NGFF现在已经改名为M.2，M.2有SATA 和PCIe两种总线标准。
 
 M.2接口是一种新的主机接口方案，可以兼容多种通信协议，如sata、PCIe、USB、HSIC、UART、SMBus等。
